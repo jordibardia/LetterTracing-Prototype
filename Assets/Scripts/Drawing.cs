@@ -1,15 +1,25 @@
-using Unity.VisualScripting;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Draw : MonoBehaviour
 {
     public Camera m_camera;
     public GameObject brush;
+    public GameObject boundingBox;
     public GameObject boardForeground;
 
+    List<LineRenderer> strokes;
+    List<LineRenderer> boundingBoxes;
     LineRenderer currentLineRenderer;
 
     Vector2 lastPos;
+
+    private void Start()
+    {
+        strokes = new List<LineRenderer>();
+        boundingBoxes = new List<LineRenderer>();
+    }
 
     private void Update()
     {
@@ -26,15 +36,23 @@ public class Draw : MonoBehaviour
         {
             PointToMousePos();
         }
-        else
+        else if (Input.GetMouseButtonUp(1) || Input.GetMouseButtonUp(0))
         {
-            currentLineRenderer = null;
+            Debug.Log("Mouse up");
+
+            if (currentLineRenderer != null)
+            {
+                strokes.Add(currentLineRenderer);
+                DrawBoundingBox(currentLineRenderer);
+
+                currentLineRenderer = null;
+            }
         }
     }
 
     void CreateBrush()
     {
-        if (!isMouseInBoard())
+        if (!IsMouseInBoard())
             return;
 
         Vector2 mousePos = m_camera.ScreenToWorldPoint(Input.mousePosition);
@@ -56,7 +74,7 @@ public class Draw : MonoBehaviour
 
     void PointToMousePos()
     {
-        if (!isMouseInBoard())
+        if (!IsMouseInBoard())
             return;
 
         Vector2 mousePos = m_camera.ScreenToWorldPoint(Input.mousePosition);
@@ -68,7 +86,7 @@ public class Draw : MonoBehaviour
         }
     }
 
-    private bool isMouseInBoard()
+    private bool IsMouseInBoard()
     {
         Ray ray = m_camera.ScreenPointToRay(Input.mousePosition);
         var rayHit = Physics2D.GetRayIntersection(ray);
@@ -77,5 +95,24 @@ public class Draw : MonoBehaviour
             return false;
 
         return rayHit.collider.gameObject == boardForeground;
+    }
+
+    private void DrawBoundingBox(LineRenderer stroke)
+    {
+        Bounds bounds = stroke.bounds;
+
+        Vector3[] boundingBoxPoints = {
+            new Vector3(bounds.min.x, bounds.min.y, bounds.center.z),
+            new Vector3(bounds.min.x, bounds.max.y, bounds.center.z),
+            new Vector3(bounds.max.x, bounds.max.y, bounds.center.z),
+            new Vector3(bounds.max.x, bounds.min.y, bounds.center.z),
+            new Vector3(bounds.min.x, bounds.min.y, bounds.center.z)
+        };
+
+        GameObject boundingBoxInstance = Instantiate(boundingBox);
+        LineRenderer boundingBoxLineRenderer = boundingBoxInstance.GetComponent<LineRenderer>();
+        boundingBoxLineRenderer.positionCount = boundingBoxPoints.Length;
+        boundingBoxLineRenderer.SetPositions(boundingBoxPoints);
+        boundingBoxes.Add(boundingBoxLineRenderer);
     }
 }
