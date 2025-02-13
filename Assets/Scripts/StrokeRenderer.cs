@@ -5,8 +5,8 @@ public class StrokeRenderer : MonoBehaviour
 {
     public Camera renderCamera;
 
-    public int textureWidth = 28;
-    public int textureHeight = 28;
+    private int textureWidth = 28;
+    private int textureHeight = 28;
 
     public string savePath = "output.jpg";
 
@@ -23,8 +23,20 @@ public class StrokeRenderer : MonoBehaviour
 
         Texture2D texture = new Texture2D(textureWidth, textureHeight, TextureFormat.RGBA32, false);
         RenderTexture.active = renderTexture;
+
         texture.ReadPixels(new Rect(0, 0, textureWidth, textureHeight), 0, 0);
-        texture.Apply();
+
+        for (int i = 0; i < textureWidth; i++)
+        {
+            for (int j = 0; j < textureHeight; j++)
+            {
+                var pixel = texture.GetPixel(i, j);
+
+                int gray = 255 - System.Math.Min((int)System.Math.Round((0.299f * (float)pixel.r * 255.0f) + (0.587f * (float)pixel.g * 255.0f) + (0.114f * (float)pixel.b * 255.0f)), 255);
+                pixel = new Color(gray, gray, gray);
+                texture.SetPixel(i, j, pixel);
+            }
+        }
 
         byte[] bytes = texture.EncodeToJPG();
         File.WriteAllBytes(savePath, bytes);
