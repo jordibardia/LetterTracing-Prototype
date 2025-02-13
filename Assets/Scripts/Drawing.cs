@@ -4,10 +4,14 @@ using UnityEngine;
 
 public class Draw : MonoBehaviour
 {
+    [SerializeField]
+    public bool drawBoundingBox = true;
+
     public Camera m_camera;
     public GameObject brush;
     public GameObject boundingBox;
     public GameObject boardForeground;
+    public GameObject strokeRenderer;
 
     List<LineRenderer> strokes;
     List<LineRenderer> boundingBoxes;
@@ -43,7 +47,11 @@ public class Draw : MonoBehaviour
             if (currentLineRenderer != null)
             {
                 strokes.Add(currentLineRenderer);
-                DrawBoundingBox(currentLineRenderer);
+
+                if (drawBoundingBox)
+                    DrawBoundingBox(currentLineRenderer);
+
+                RenderStroke(currentLineRenderer.bounds);
 
                 currentLineRenderer = null;
             }
@@ -114,5 +122,10 @@ public class Draw : MonoBehaviour
         boundingBoxLineRenderer.positionCount = boundingBoxPoints.Length;
         boundingBoxLineRenderer.SetPositions(boundingBoxPoints);
         boundingBoxes.Add(boundingBoxLineRenderer);
+    }
+
+    private void RenderStroke(Bounds strokeBounds)
+    {
+        strokeRenderer.GetComponent<StrokeRenderer>().RenderStrokeToImage(strokeBounds);
     }
 }
