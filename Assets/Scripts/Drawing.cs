@@ -7,13 +7,18 @@ public class Draw : MonoBehaviour
     [SerializeField]
     public bool drawBoundingBox = true;
 
+    [SerializeField]
+    private GameObject letter;
+    private TracingManager tracingManager;
+
+    [SerializeField]
+    private GameObject gameManager;
+
     public Camera m_camera;
     public GameObject brush;
     public GameObject boundingBox;
     public GameObject boardForeground;
-    public GameObject strokeRenderer;
 
-    List<LineRenderer> strokes;
     List<LineRenderer> boundingBoxes;
     LineRenderer currentLineRenderer;
 
@@ -21,8 +26,8 @@ public class Draw : MonoBehaviour
 
     private void Start()
     {
-        strokes = new List<LineRenderer>();
         boundingBoxes = new List<LineRenderer>();
+        tracingManager = letter.GetComponent<TracingManager>();
     }
 
     private void Update()
@@ -32,6 +37,14 @@ public class Draw : MonoBehaviour
 
     void Drawing()
     {
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+            var nodes = GameObject.FindGameObjectWithTag("TracingNodes");
+
+            foreach (Transform child in nodes.transform)
+                child.gameObject.GetComponent<Renderer>().enabled = !child.gameObject.GetComponent<Renderer>().enabled;
+        }
+
         if (Input.GetKeyDown(KeyCode.Mouse0))
         {
             CreateBrush();
@@ -46,13 +59,12 @@ public class Draw : MonoBehaviour
 
             if (currentLineRenderer != null)
             {
-                strokes.Add(currentLineRenderer);
-
                 if (drawBoundingBox)
                     DrawBoundingBox(currentLineRenderer);
 
-                RenderStroke(currentLineRenderer.bounds);
+                gameManager.GetComponent<GameManager>().UpdateGame(tracingManager.GradeTracing());
 
+                Destroy(currentLineRenderer);
                 currentLineRenderer = null;
             }
         }
@@ -78,6 +90,8 @@ public class Draw : MonoBehaviour
         currentLineRenderer.positionCount++;
         int positionIndex = currentLineRenderer.positionCount - 1;
         currentLineRenderer.SetPosition(positionIndex, pointPos);
+
+        tracingManager.UpdateProgress();
     }
 
     void PointToMousePos()
@@ -96,13 +110,11 @@ public class Draw : MonoBehaviour
 
     private bool IsMouseInBoard()
     {
-        Ray ray = m_camera.ScreenPointToRay(Input.mousePosition);
-        var rayHit = Physics2D.GetRayIntersection(ray);
+        LayerMask layerMask = LayerMask.GetMask("Drawing");
+        Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        var hit = Physics2D.Raycast(mousePos, Vector2.zero, Mathf.Infinity, layerMask);
 
-        if (rayHit.collider == null)
-            return false;
-
-        return rayHit.collider.gameObject == boardForeground;
+        return hit.collider != null;
     }
 
     private void DrawBoundingBox(LineRenderer stroke)
@@ -122,10 +134,5 @@ public class Draw : MonoBehaviour
         boundingBoxLineRenderer.positionCount = boundingBoxPoints.Length;
         boundingBoxLineRenderer.SetPositions(boundingBoxPoints);
         boundingBoxes.Add(boundingBoxLineRenderer);
-    }
-
-    private void RenderStroke(Bounds strokeBounds)
-    {
-        strokeRenderer.GetComponent<StrokeRenderer>().RenderStrokeToImage(strokeBounds);
     }
 }

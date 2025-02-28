@@ -1,14 +1,17 @@
 using System.IO;
+using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public class StrokeRenderer : MonoBehaviour
 {
     public Camera renderCamera;
+    public GameObject classifier;
 
     private int textureWidth = 28;
     private int textureHeight = 28;
 
-    public string savePath = "output.jpg";
+    public string savePath = "output.png";
 
     private float paddingFactor = 1.1f;
 
@@ -26,6 +29,9 @@ public class StrokeRenderer : MonoBehaviour
 
         texture.ReadPixels(new Rect(0, 0, textureWidth, textureHeight), 0, 0);
 
+        float[] pixels = new float[textureWidth * textureHeight];
+        List<int> values = new List<int>();
+        int ind = 0;
         for (int i = 0; i < textureWidth; i++)
         {
             for (int j = 0; j < textureHeight; j++)
@@ -33,12 +39,21 @@ public class StrokeRenderer : MonoBehaviour
                 var pixel = texture.GetPixel(i, j);
 
                 int gray = 255 - System.Math.Min((int)System.Math.Round((0.299f * (float)pixel.r * 255.0f) + (0.587f * (float)pixel.g * 255.0f) + (0.114f * (float)pixel.b * 255.0f)), 255);
+                values.Add(gray);
+
                 pixel = new Color(gray, gray, gray);
                 texture.SetPixel(i, j, pixel);
+
+                pixels[ind] = (float)gray;
+                ind += 1;
             }
         }
 
-        byte[] bytes = texture.EncodeToJPG();
+        File.WriteAllLines("gray_data.txt", values.Select(x => x.ToString()));
+
+        classifier.GetComponent<DrawingClassifier>().Classify(pixels);
+
+        byte[] bytes = texture.EncodeToPNG();
         File.WriteAllBytes(savePath, bytes);
 
         Debug.Log($"Saved image");
