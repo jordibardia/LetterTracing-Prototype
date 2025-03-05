@@ -20,6 +20,8 @@ public class Draw : MonoBehaviour
     public GameObject boardForeground;
 
     List<LineRenderer> boundingBoxes;
+
+    GameObject currentBrush;
     LineRenderer currentLineRenderer;
 
     Vector2 lastPos;
@@ -64,7 +66,7 @@ public class Draw : MonoBehaviour
 
                 gameManager.GetComponent<GameManager>().UpdateGame(tracingManager.GradeTracing());
 
-                Destroy(currentLineRenderer);
+                Destroy(currentBrush);
                 currentLineRenderer = null;
             }
         }
@@ -77,8 +79,8 @@ public class Draw : MonoBehaviour
 
         Vector2 mousePos = m_camera.ScreenToWorldPoint(Input.mousePosition);
 
-        GameObject brushInstance = Instantiate(brush);
-        currentLineRenderer = brushInstance.GetComponent<LineRenderer>();
+        currentBrush = Instantiate(brush);
+        currentLineRenderer = currentBrush.GetComponent<LineRenderer>();
 
         currentLineRenderer.SetPosition(0, mousePos);
         currentLineRenderer.SetPosition(1, mousePos);

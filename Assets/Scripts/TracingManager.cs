@@ -24,7 +24,10 @@ public class TracingManager : MonoBehaviour
         var tracingNodeObject = GameObject.FindGameObjectWithTag("TracingNodes");
 
         foreach (Transform child in tracingNodeObject.transform)
+        {
+            child.gameObject.GetComponent<Renderer>().enabled = false;
             nodes.Add(child.gameObject);
+        }
 
         visited = new bool[nodes.Count];
         orderVisited = new List<int>();
@@ -42,14 +45,7 @@ public class TracingManager : MonoBehaviour
         var hitBound = Physics2D.Raycast(mousePos, Vector2.zero, Mathf.Infinity, tracingBoundsLayer);
 
         if (!exitedPolygon)
-        {
-            //Debug.Log("In polygon");
             exitedPolygon = (hitBound.collider == null);
-        }
-        else
-        {
-            //Debug.Log("Exited polygon");
-        }
 
         // Check if node has been hit
         var hitNode = Physics2D.Raycast(mousePos, Vector2.zero, Mathf.Infinity, nodeLayer);
