@@ -30,8 +30,11 @@ public class GameManager : MonoBehaviour
     {
         gradingText.text = gradingResult ? "CORRECT" : "INCORRECT";
         //gradingText.color = gradingResult ? new Color32(0, 255, 0, 255) : new Color32(255, 0, 0, 255);
-        Destroy(GameObject.FindGameObjectWithTag("TracingNodes"));
-        Destroy(GameObject.FindGameObjectWithTag("TracingBounds"));
+
+        var tracingNodes = GameObject.FindGameObjectWithTag("TracingNodes");
+        var tracingBounds = GameObject.FindGameObjectWithTag("TracingBounds");
+        Destroy(tracingNodes);
+        Destroy(tracingBounds);
 
         CreateTracing();
     }
@@ -45,6 +48,6 @@ public class GameManager : MonoBehaviour
         Instantiate(prefabs[selectionInd]);
         Instantiate(tracingBounds[selectionInd]);
 
-        tracingManager.UpdateTracingNodes();
+        tracingManager.UpdateTracingNodes(prefabs[selectionInd].transform.childCount);
     }
 }

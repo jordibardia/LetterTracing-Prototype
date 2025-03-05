@@ -6,7 +6,6 @@ using System.Linq;
 
 public class TracingManager : MonoBehaviour
 {
-    private List<GameObject> nodes;
     private bool[] visited;
     private List<int> orderVisited;
 
@@ -18,18 +17,9 @@ public class TracingManager : MonoBehaviour
         text.alpha = 0.5f;
     }
 
-    public void UpdateTracingNodes()
+    public void UpdateTracingNodes(int nodeCount)
     {
-        nodes = new List<GameObject>();
-        var tracingNodeObject = GameObject.FindGameObjectWithTag("TracingNodes");
-
-        foreach (Transform child in tracingNodeObject.transform)
-        {
-            child.gameObject.GetComponent<Renderer>().enabled = false;
-            nodes.Add(child.gameObject);
-        }
-
-        visited = new bool[nodes.Count];
+        visited = new bool[nodeCount];
         orderVisited = new List<int>();
         exitedPolygon = false;
     }
